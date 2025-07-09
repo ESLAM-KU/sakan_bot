@@ -135,6 +135,7 @@ SYSTEM_PROMPT = """
 🚫 تذكير أخير: لا يجب أن تقدم معلومات عن: السياسة، الدين، الدراسة الجامعية نفسها، الطعام، الفرق بين الجامعات، الكليات، العلاقات العاطفية، أو أي موضوع لا يتصل بالسكن الجامعي المصري فقط.
 """
 
+
 @app.route('/')
 def home():
     return "✅ Sakan Chatbot is running"
@@ -146,9 +147,8 @@ def chat():
 
     try:
         response = model.generate_content(
-            [ 
-                {"role": "system", "parts": [SYSTEM_PROMPT]},
-                {"role": "user", "parts": [user_message]}
+            [
+                {"role": "user", "parts": [f"{SYSTEM_PROMPT}\n\n{user_message}"]}
             ]
         )
         return jsonify({"response": response.text})
@@ -157,6 +157,5 @@ def chat():
 
 # مناسب لـ Railway
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 8080))  # خلي القيمة الافتراضية 8080
+    port = int(os.environ.get("PORT", 8080))  # Railway قد يستخدم PORT=8080
     app.run(host='0.0.0.0', port=port)
-
