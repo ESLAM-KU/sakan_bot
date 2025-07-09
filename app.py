@@ -139,28 +139,23 @@ SYSTEM_PROMPT = """
 def home():
     return "✅ Sakan Chatbot is running"
 
-# Endpoint الخاص بالشات
 @app.route('/chat', methods=['POST'])
 def chat():
     data = request.get_json()
     user_message = data.get("message", "")
-    
-    messages = [
-        {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": user_message}
-    ]
-    
+
     try:
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=messages
+        response = model.generate_content(
+            [ 
+                {"role": "system", "parts": [SYSTEM_PROMPT]},
+                {"role": "user", "parts": [user_message]}
+            ]
         )
-        chat_reply = response.choices[0].message['content']
-        return jsonify({"response": chat_reply})
+        return jsonify({"response": response.text})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# ✅ مناسب لـ Railway
+# مناسب لـ Railway
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))  # Railway يحدد البورت من البيئة
+    port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
