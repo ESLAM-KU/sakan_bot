@@ -135,23 +135,32 @@ SYSTEM_PROMPT = """
 🚫 تذكير أخير: لا يجب أن تقدم معلومات عن: السياسة، الدين، الدراسة الجامعية نفسها، الطعام، الفرق بين الجامعات، الكليات، العلاقات العاطفية، أو أي موضوع لا يتصل بالسكن الجامعي المصري فقط.
 """
 
+@app.route('/')
+def home():
+    return "✅ Sakan Chatbot is running"
 
+# Endpoint الخاص بالشات
 @app.route('/chat', methods=['POST'])
 def chat():
     data = request.get_json()
     user_message = data.get("message", "")
-
+    
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": user_message}
+    ]
+    
     try:
-        # بدء محادثة جديدة مع برومبت النظام
-        convo = model.start_chat(history=[
-            {"role": "user", "parts": [SYSTEM_PROMPT]}
-        ])
-        # إرسال الرسالة واستقبال الرد
-        response = convo.send_message(user_message)
-        return jsonify({"response": response.text})
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=messages
+        )
+        chat_reply = response.choices[0].message['content']
+        return jsonify({"response": chat_reply})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# ✅ مناسب لـ Railway
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))  # مناسب لـ Railway
+    port = int(os.environ.get("PORT", 5000))  # Railway يحدد البورت من البيئة
     app.run(host='0.0.0.0', port=port)
